@@ -1,0 +1,1 @@
+GRANT SELECT ON ne_50m_admin_0_countries TO tileserv;

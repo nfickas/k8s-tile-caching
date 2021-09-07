@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tileserv
+  namespace: nate-test
+  labels:
+    app: tileserv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tileserv
+  template:
+    metadata:
+      labels:
+        app: tileserv
+    spec:
+      containers:
+      - name: tileserv
+        image: pramsey/pg_tileserv
+        ports:
+        - containerPort: 7800
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: hippo-pguser-tileserv
+              key: uri
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true

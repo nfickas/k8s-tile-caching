@@ -1,0 +1,5 @@
+namespace: nate-test
+
+resources:
+- deployment.yaml
+- service.yaml
