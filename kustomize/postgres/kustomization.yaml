@@ -1,4 +1,4 @@
-namespace: nate-test
+namespace: default
 
 resources:
 - postgres.yaml

@@ -26,14 +26,14 @@ Next we need some sample data to be able to show off our solution, let’s utili
 
 Port-forward the database:
 ```bash
-export PG_CLUSTER_PRIMARY_POD=$(kubectl get pod -n nate-test -o name -l postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master)
-kubectl -n nate-test port-forward "${PG_CLUSTER_PRIMARY_POD}" 5432:5432
+export PG_CLUSTER_PRIMARY_POD=$(kubectl get pod -n default -o name -l postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master)
+kubectl -n default port-forward "${PG_CLUSTER_PRIMARY_POD}" 5432:5432
 
 Then to load the data and give our tileserv user permissions to select on the new table:
 
 export PG_CLUSTER_SUPERUSER_SECRET_NAME=hippo-pguser-postgres
-export PGSUPERPASS=$(kubectl get secrets -n nate-test "${PG_CLUSTER_SUPERUSER_SECRET_NAME}" -o go-template='{{.data.password | base64decode}}')
-export PGSUPERUSER=$(kubectl get secrets -n nate-test "${PG_CLUSTER_SUPERUSER_SECRET_NAME}" -o go-template='{{.data.user | base64decode}}')
+export PGSUPERPASS=$(kubectl get secrets -n default "${PG_CLUSTER_SUPERUSER_SECRET_NAME}" -o go-template='{{.data.password | base64decode}}')
+export PGSUPERUSER=$(kubectl get secrets -n default "${PG_CLUSTER_SUPERUSER_SECRET_NAME}" -o go-template='{{.data.user | base64decode}}')
 PGPASSWORD=$PGSUPERPASS psql -h localhost -U $PGSUPERUSER -d postgres < ./data/postgis.sql
 shp2pgsql -D -s 4326 ./data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp | PGPASSWORD=$PGSUPERPASS psql -d postgres -h localhost -U $PGSUPERUSER
 PGPASSWORD=$PGSUPERPASS psql -h localhost -U $PGSUPERUSER -d postgres < ./data/perms.sql
@@ -55,7 +55,7 @@ As you can see from the `kustomize/pg_tileserv/deployment.yaml` file we are pull
 Next we need to enable our caching layer, for this example we are going to utilize Varnish and specifically we will be using IBM’s Varnish Operator. To install the Varnish Operator: https://ibm.github.io/varnish-operator/quick-start.html
 ```bash
 helm repo add varnish-operator https://raw.githubusercontent.com/IBM/varnish-operator/main/helm-releases
-helm install varnish-operator --namespace nate-test varnish-operator/varnish-operator
+helm install varnish-operator --namespace default varnish-operator/varnish-operator
 ```
 
 Then use the following to deploy a VarnishCluster:
@@ -65,7 +65,7 @@ apiVersion: caching.ibm.com/v1alpha1
 kind: VarnishCluster
 metadata:
   name: varnishcluster-example
-  namespace: nate-test # the namespace we've created above
+  namespace: default # the namespace we've created above
 spec:
   varnish:
     args: ["-p", "default_ttl=600"]
@@ -90,7 +90,7 @@ We now have a fully functioning caching layer, but let’s test it out just to m
 
 Our openlayers map is expecting our tile server to be served over `localhost:8080`. So port-forward the varnish service to port 8080 using the following command:
 ```bash
-kubectl port-forward -n nate-test svc/varnishcluster-example 8080:80
+kubectl port-forward -n default svc/varnishcluster-example 8080:80
 ```
 
 Open the `openlayers.html` file located in the root directory in your browser of choice.

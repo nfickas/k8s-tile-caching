@@ -3,7 +3,7 @@ cat <<EOF | kubectl create -f -
  kind: VarnishCluster
  metadata:
    name: varnishcluster-example
-   namespace: nate-test # the namespace we've created above
+   namespace: default # the namespace we've created above
  spec:
    varnish:
      args: ["-p", "default_ttl=600"]
