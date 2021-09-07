@@ -28,9 +28,10 @@ Port-forward the database:
 ```bash
 export PG_CLUSTER_PRIMARY_POD=$(kubectl get pod -n default -o name -l postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master)
 kubectl -n default port-forward "${PG_CLUSTER_PRIMARY_POD}" 5432:5432
+```
 
 Then to load the data and give our tileserv user permissions to select on the new table:
-
+```bash
 export PG_CLUSTER_SUPERUSER_SECRET_NAME=hippo-pguser-postgres
 export PGSUPERPASS=$(kubectl get secrets -n default "${PG_CLUSTER_SUPERUSER_SECRET_NAME}" -o go-template='{{.data.password | base64decode}}')
 export PGSUPERUSER=$(kubectl get secrets -n default "${PG_CLUSTER_SUPERUSER_SECRET_NAME}" -o go-template='{{.data.user | base64decode}}')
